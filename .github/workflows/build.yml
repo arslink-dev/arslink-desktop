@@ -1,3 +1,10 @@
+# ARSMAG: этот workflow — модифицированная версия апстримного build.yml.
+# Что именно изменено и почему — см. IZMENENIYA.md в корне репозитория и
+# отчёт docs/reports/otchet-02-repozitorij-i-ci.md в проекте клиента.
+# Коротко: оставлены только цели windows64 и windowslegacy64, добавлена
+# проверка SHA-256 внешних бинарных загрузок (см. ZAVISIMOSTI.md),
+# srslist.h закреплён на коммит вместо ветки, job публикации релиза
+# убран, updater.exe исключён из финального пакета.
 name: Throne build matrix
 on:
   workflow_dispatch:
@@ -5,51 +12,24 @@ on:
       tag:
         description: "Release Tag and version"
         required: true
-      publish:
-        description: "r for normal release, p for prerelease, leave empty to not publish anything"
-        required: false
 jobs:
   build-go:
     permissions:
       contents: read
+    env:
+      # ARSMAG: SHA-256 патченого Go-тулчейна для Windows 7, см. ZAVISIMOSTI.md.
+      GO_ZIP_SHA256: "47e0365adad30c8a35c9bc572a93575119ec3130217f57c81c6b1edd3e6dffc1"
     strategy:
       matrix:
+        # ARSMAG: матрица обрезана до windows64 и windowslegacy64 (было 9 целей).
         # windowslegacy runs the darwin host toolchain from go.zip; keep it on macOS.
         include:
           - cross_os: windows
             cross_arch: amd64
             go_version: "1.26.5"
             runner: ubuntu-22.04
-          - cross_os: windows
-            cross_arch: arm64
-            go_version: "1.26.5"
-            runner: ubuntu-22.04
-          - cross_os: linux
-            cross_arch: amd64
-            go_version: "1.26.5"
-            runner: ubuntu-22.04
-          - cross_os: linux
-            cross_arch: arm64
-            go_version: "1.26.5"
-            runner: ubuntu-22.04
-          - cross_os: darwin
-            cross_arch: amd64
-            go_version: "1.26.5"
-            runner: macos-latest
-          - cross_os: darwin
-            cross_arch: arm64
-            go_version: "1.26.5"
-            runner: macos-latest
-          - cross_os: darwinlegacy
-            cross_arch: amd64
-            go_version: "1.26.5"
-            runner: macos-latest
           - cross_os: windowslegacy
             cross_arch: amd64
-            go_version: "1.26.5"
-            runner: macos-latest
-          - cross_os: windowslegacy
-            cross_arch: 386
             go_version: "1.26.5"
             runner: macos-latest
       fail-fast: false
@@ -74,8 +54,10 @@ jobs:
             core/server/go.sum
       - name: Install Golang For Legacy OS
         if: steps.cache-common.outputs.cache-hit != 'true' && contains( matrix.cross_os, 'legacy' )
+        shell: bash
         run: |
           curl -L -o go.zip https://github.com/throneproj/env_windows_legacy/releases/download/latest/go.zip
+          echo "${GO_ZIP_SHA256}  go.zip" | sha256sum -c -
           7z x go.zip
       - name: Install Protoc
         if: steps.cache-common.outputs.cache-hit != 'true'
@@ -128,74 +110,31 @@ jobs:
       contents: read
     needs:
       - build-go
+    env:
+      # ARSMAG: SHA-256 внешних загрузок, см. ZAVISIMOSTI.md. OpenSSL общий
+      # для обеих целей (обе x64); Qt свой на цель — см. matrix.qt_sha256.
+      OPENSSL_X64_SHA256: "0cc10ca8bd88a08f1f4275edf8c3f285c5988803e693d4dc8a12a85a9e544412"
+      # srslist.h закреплён на коммит в throneproj/routeprofiles вместо ветки
+      # rule-set — та живёт наездами (force-push поверх истории), см. ZAVISIMOSTI.md.
+      SRSLIST_COMMIT: "e670939edad51a9381c4577b4c05c2a76d82a41f"
+      SRSLIST_SHA256: "88b7c1af9a065deda6a8d590c1a4d75c02997d44f9164b238c9c88a247b37430"
     strategy:
       matrix:
+        # ARSMAG: матрица обрезана до windows64 и windowslegacy64 (было 11 целей).
         include:
           - platform: windows-latest
             qt_version: "6.11.1"
+            qt_sha256: "8d7271feca09092ec5f24eaaf1291bd52aa76ab57987fb7df2da0f259014c428"
             target: x64
             dest_suffix: windows-amd64
             common: windows-amd64
             launcher: sccache
-          - platform: windows-11-arm
-            qt_version: "6.11.1"
-            target: arm64
-            dest_suffix: windows-arm64
-            common: windows-arm64
-            launcher: ""
-          - platform: ubuntu-22.04
-            qt_version: "6.11.1"
-            target: x86_64
-            dest_suffix: linux-amd64
-            common: linux-amd64
-            launcher: ccache
-          - platform: ubuntu-22.04
-            qt_version: "6.2.0"
-            target: x86_64
-            dest_suffix: linux-amd64-system-qt
-            common: linux-amd64
-            launcher: ccache
-          - platform: ubuntu-24.04-arm
-            qt_version: "6.11.1"
-            target: aarch64
-            dest_suffix: linux-arm64
-            common: linux-arm64
-            launcher: ccache
-          - platform: ubuntu-22.04-arm
-            qt_version: "6.2.0"
-            target: aarch64
-            dest_suffix: linux-arm64-system-qt
-            common: linux-arm64
-            launcher: ccache
-          - platform: macos-latest
-            qt_version: "6.11.1"
-            target: x86_64
-            dest_suffix: darwin-amd64
-            common: darwin-amd64
-            launcher: ccache
-          - platform: macos-latest
-            qt_version: "6.11.1"
-            target: arm64
-            dest_suffix: darwin-arm64
-            common: darwin-arm64
-            launcher: ccache
-          - platform: macos-15
-            qt_version: "6.4.3"
-            target: x86_64
-            dest_suffix: darwinlegacy-amd64
-            common: darwinlegacy-amd64
-            launcher: ccache
           - platform: windows-latest
             qt_version: "6.2.13"
+            qt_sha256: "befecc7f607014a4b712b074a849a154e16038e26f01673db31c36a3029623d4"
             target: x64
             dest_suffix: windowslegacy-amd64
             common: windowslegacy-amd64
-            launcher: sccache
-          - platform: windows-2022
-            qt_version: "6.2.13"
-            target: x86
-            dest_suffix: windowslegacy-386
-            common: windowslegacy-386
             launcher: sccache
       fail-fast: false
     runs-on: ${{ matrix.platform }}
@@ -250,7 +189,9 @@ jobs:
         if: contains( matrix.platform, 'windows' ) && steps.cache-winqt.outputs.cache-hit != 'true'
         run: |
           curl -L -o qt.7z https://github.com/throneproj/buildqt/releases/download/Qt_${{ matrix.qt_version }}/Qt_${{ matrix.qt_version }}_${{ matrix.target }}.7z
+          echo "${{ matrix.qt_sha256 }}  qt.7z" | sha256sum -c -
           curl -L -o openssl.7z https://github.com/throneproj/env_windows_legacy/releases/download/latest/openssl_${{ matrix.target }}.7z
+          echo "${OPENSSL_X64_SHA256}  openssl.7z" | sha256sum -c -
       - name: Windows - Generate MakeFile and Build
         shell: bash
         if: contains( matrix.platform, 'windows' )
@@ -261,7 +202,8 @@ jobs:
           export OPENSSL_ROOT_DIR=$PWD/openssl
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/${SRSLIST_COMMIT}/srslist.h"
+          echo "${SRSLIST_SHA256}  srslist.h" | sha256sum -c -
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo $LAUNCHER_ARGS ..
           ninja
           cd ..
@@ -273,7 +215,8 @@ jobs:
           sudo apt update
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/${SRSLIST_COMMIT}/srslist.h"
+          echo "${SRSLIST_SHA256}  srslist.h" | sha256sum -c -
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc -static-libstdc++" $LAUNCHER_ARGS ..
           ninja
           cd ..
@@ -286,7 +229,8 @@ jobs:
           sudo apt install -y qt6-base-dev qt6-tools-dev qt6-tools-dev-tools qt6-l10n-tools libqt6svg6-dev qt6-translations-l10n libglx-dev libgl1-mesa-dev
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/${SRSLIST_COMMIT}/srslist.h"
+          echo "${SRSLIST_SHA256}  srslist.h" | sha256sum -c -
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DCMAKE_EXE_LINKER_FLAGS="-static-libgcc" $LAUNCHER_ARGS ..
           ninja
           cd ..
@@ -297,12 +241,17 @@ jobs:
         run: |
           mkdir build
           cd build
-          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/rule-set/srslist.h"
+          curl -fLso srslist.h "https://raw.githubusercontent.com/throneproj/routeprofiles/${SRSLIST_COMMIT}/srslist.h"
+          echo "${SRSLIST_SHA256}  srslist.h" | sha256sum -c -
           cmake -GNinja -DCMAKE_BUILD_TYPE=RelWithDebInfo -DNKR_PACKAGE_MACOS=1 -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15 -DCMAKE_OSX_ARCHITECTURES=${{ matrix.target }} $LAUNCHER_ARGS ..
           ninja
           cd ..
           ./script/deploy_macos.sh
       # ========================================================================================================= Deployments
+      - name: ARSMAG - Remove updater from package
+        shell: bash
+        run: |
+          rm -fv "$DEST/updater.exe" "$DEST/updater" 2>/dev/null || true
       - name: Tar files
         shell: bash
         run: tar czf artifacts.tgz ./deployment
@@ -312,136 +261,3 @@ jobs:
           name: Throne-${{ github.sha }}-${{ matrix.dest_suffix }}
           path: artifacts.tgz
           compression-level: 0
-  publish:
-    name: Pack & Publish Release
-    runs-on: ubuntu-latest
-    needs:
-      - build-cpp
-    permissions:
-      contents: write
-      actions: read
-    steps:
-      - name: Checking out sources
-        uses: actions/checkout@v4.3.1
-      - name: Download Artifacts
-        uses: actions/download-artifact@v8.0.1
-        with:
-          path: download-artifact
-      - name: Pack
-        run: |
-          curl -Lo - https://github.com/tcnksm/ghr/releases/download/v0.17.0/ghr_v0.17.0_linux_amd64.tar.gz | tar xzv
-          mv ghr*linux_amd64/ghr .
-          find . -name artifacts.tgz | xargs -n1 tar xzf
-          ####
-          sudo apt install nsis
-          cp ./script/windows_installer.nsi .
-          makensis windows_installer.nsi
-          cp ThroneSetup.exe deployment/Throne-${{ github.event.inputs.tag }}-windows-universal-installer.exe
-          ####
-          cd deployment
-          mkdir debug
-          ####
-          bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} amd64
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-amd64.deb
-          rm -rf Throne
-          ####
-          bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} amd64 systemqt
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-amd64-system-qt.deb
-          rm -rf Throne
-          ####
-          bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} arm64
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-arm64.deb
-          rm -rf Throne
-          ####
-          bash ../script/pack_debian.sh ${{ github.event.inputs.tag }} arm64 systemqt
-          mv Throne.deb Throne-${{ github.event.inputs.tag }}-debian-arm64-system-qt.deb
-          rm -rf Throne
-          ####
-          mv linux-amd64 Throne
-          mv Throne/Throne.debug debug/Throne-${{ github.event.inputs.tag }}-linux-amd64.debug
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-linux-amd64.zip Throne
-          rm -rf Throne
-          ####
-          mv linux-arm64 Throne
-          mv Throne/Throne.debug debug/Throne-${{ github.event.inputs.tag }}-linux-arm64.debug
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-linux-arm64.zip Throne
-          rm -rf Throne
-          ####
-          mv windows-amd64 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windows-amd64.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windows64.zip Throne
-          rm -rf Throne
-          ####
-          mv windows-arm64 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windows-arm64.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windows-arm64.zip Throne
-          rm -rf Throne
-          ####
-          mv windowslegacy-386 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windowslegacy-386.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windows32.zip Throne
-          rm -rf Throne
-          ####
-          mv windowslegacy-amd64 Throne
-          mv Throne/Throne.pdb debug/Throne-${{ github.event.inputs.tag }}-windowslegacy-amd64.pdb
-          zip -9 -r Throne-${{ github.event.inputs.tag }}-windowslegacy64.zip Throne
-          rm -rf Throne
-          ####
-          mkdir Throne
-          mv darwin-arm64/Throne.app Throne/Throne.app
-          mv Throne/Throne.app/Contents/MacOS/Throne.dSYM debug/Throne-${{ github.event.inputs.tag }}-macos-arm64.dSYM
-          zip -9 --symlinks -r Throne-${{ github.event.inputs.tag }}-macos-arm64.zip Throne
-          rm -rf darwin-arm64
-          rm -rf Throne
-          ####
-          mkdir Throne
-          mv darwin-amd64/Throne.app Throne/Throne.app
-          mv Throne/Throne.app/Contents/MacOS/Throne.dSYM debug/Throne-${{ github.event.inputs.tag }}-macos-amd64.dSYM
-          zip -9 --symlinks -r Throne-${{ github.event.inputs.tag }}-macos-amd64.zip Throne
-          rm -rf darwin-amd64
-          rm -rf Throne
-          ####
-          mkdir Throne
-          mv darwinlegacy-amd64/Throne.app Throne/Throne.app
-          mv Throne/Throne.app/Contents/MacOS/Throne.dSYM debug/Throne-${{ github.event.inputs.tag }}-macoslegacy-amd64.dSYM
-          zip -9 --symlinks -r Throne-${{ github.event.inputs.tag }}-macoslegacy-amd64.zip Throne
-          rm -rf darwinlegacy-amd64
-          rm -rf Throne
-          ####
-          zip -9 -r debug-symbols.zip debug
-      - name: Uploading Debug Artifact
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: Debug-${{ github.sha }}
-          path: deployment/debug-symbols.zip
-          compression-level: 0
-      - name: Clean Up
-        run: |
-          cd deployment
-          rm -rf windows-amd64
-          rm -rf windows-arm64
-          rm -rf linux-amd64
-          rm -rf linux-amd64-system-qt
-          rm -rf linux-arm64
-          rm -rf linux-arm64-system-qt
-          rm -rf darwin-amd64
-          rm -rf darwin-arm64
-          rm -rf darwinlegacy-amd64
-          rm -rf windowslegacy-amd64
-          rm -rf windowslegacy-386
-          rm -rf *.pdb
-          rm -rf debug*
-      - name: Uploading Artifact
-        uses: actions/upload-artifact@v7.0.1
-        with:
-          name: Deployment-${{ github.sha }}
-          path: deployment
-          compression-level: 0
-      - name: PreRelease
-        if: github.event.inputs.publish == 'p'
-        run: |
-          ./ghr -prerelease -delete -c ${{ github.sha }} -t "${{ github.token }}" -n "${{ github.event.inputs.tag }}" "${{ github.event.inputs.tag }}" deployment
-      - name: Release
-        if: github.event.inputs.publish == 'r'
-        run: |
-          ./ghr -delete -c ${{ github.sha }} -t "${{ github.token }}" -n "${{ github.event.inputs.tag }}" "${{ github.event.inputs.tag }}" deployment
