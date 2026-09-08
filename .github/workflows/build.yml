@@ -22,9 +22,6 @@ jobs:
   build-go:
     permissions:
       contents: read
-    env:
-      # ARSMAG: SHA-256 патченого Go-тулчейна для Windows 7, см. ZAVISIMOSTI.md.
-      GO_ZIP_SHA256: "47e0365adad30c8a35c9bc572a93575119ec3130217f57c81c6b1edd3e6dffc1"
     strategy:
       matrix:
         # ARSMAG: матрица обрезана до windows64 и windowslegacy64 (было 9 целей).
@@ -41,6 +38,8 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.runner }}
     env:
+      # ARSMAG: SHA-256 патченого Go-тулчейна для Windows 7, см. ZAVISIMOSTI.md.
+      GO_ZIP_SHA256: "47e0365adad30c8a35c9bc572a93575119ec3130217f57c81c6b1edd3e6dffc1"
       DEST: ${{ github.workspace }}/deployment/${{ matrix.cross_os }}-${{ matrix.cross_arch }}
     steps:
       - name: Checking out sources
@@ -116,14 +115,6 @@ jobs:
       contents: read
     needs:
       - build-go
-    env:
-      # ARSMAG: SHA-256 внешних загрузок, см. ZAVISIMOSTI.md. OpenSSL общий
-      # для обеих целей (обе x64); Qt свой на цель — см. matrix.qt_sha256.
-      OPENSSL_X64_SHA256: "0cc10ca8bd88a08f1f4275edf8c3f285c5988803e693d4dc8a12a85a9e544412"
-      # srslist.h закреплён на коммит в throneproj/routeprofiles вместо ветки
-      # rule-set — та живёт наездами (force-push поверх истории), см. ZAVISIMOSTI.md.
-      SRSLIST_COMMIT: "e670939edad51a9381c4577b4c05c2a76d82a41f"
-      SRSLIST_SHA256: "88b7c1af9a065deda6a8d590c1a4d75c02997d44f9164b238c9c88a247b37430"
     strategy:
       matrix:
         # ARSMAG: матрица обрезана до windows64 и windowslegacy64 (было 11 целей).
@@ -145,6 +136,13 @@ jobs:
       fail-fast: false
     runs-on: ${{ matrix.platform }}
     env:
+      # ARSMAG: SHA-256 внешних загрузок, см. ZAVISIMOSTI.md. OpenSSL общий
+      # для обеих целей (обе x64); Qt свой на цель — см. matrix.qt_sha256.
+      OPENSSL_X64_SHA256: "0cc10ca8bd88a08f1f4275edf8c3f285c5988803e693d4dc8a12a85a9e544412"
+      # srslist.h закреплён на коммит в throneproj/routeprofiles вместо ветки
+      # rule-set — та живёт наездами (force-push поверх истории), см. ZAVISIMOSTI.md.
+      SRSLIST_COMMIT: "e670939edad51a9381c4577b4c05c2a76d82a41f"
+      SRSLIST_SHA256: "88b7c1af9a065deda6a8d590c1a4d75c02997d44f9164b238c9c88a247b37430"
       # ARSMAG: на push (не workflow_dispatch) github.event.inputs пуст —
       # подставляем номер запуска, чтобы сборка не падала без входа tag.
       INPUT_VERSION: ${{ github.event.inputs.tag || format('0.0.0-ci.{0}', github.run_number) }}
