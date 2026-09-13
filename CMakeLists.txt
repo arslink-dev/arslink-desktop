@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.20)
 
-project(Throne VERSION 0.1)
+project(ArsLink VERSION 0.1)
 
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
@@ -297,7 +297,7 @@ set(PROJECT_SOURCES
         src/ui/setting/RawRouteItem.cpp
         include/ui/setting/RawRouteItem.h
 
-        res/Throne.qrc
+        res/ArsLink.qrc
         ${QV2RAY_RC}
         res/darkstyle.qrc
         res/theme/feiyangqingyun/qss.qrc
@@ -434,30 +434,30 @@ if (NOT APPLE AND Qt6_VERSION VERSION_GREATER_EQUAL 6.9.0)
 endif ()
 
 # Qt exe
-qt_add_executable(Throne
+qt_add_executable(ArsLink
         MANUAL_FINALIZATION
         ${PROJECT_SOURCES}
 )
 
 # Target
 
-set_property(TARGET Throne PROPERTY AUTOUIC ON)
-set_property(TARGET Throne PROPERTY AUTOMOC ON)
-set_property(TARGET Throne PROPERTY AUTORCC ON)
+set_property(TARGET ArsLink PROPERTY AUTOUIC ON)
+set_property(TARGET ArsLink PROPERTY AUTOMOC ON)
+set_property(TARGET ArsLink PROPERTY AUTORCC ON)
 
 
 # Target Source macOS
 
 set(MACOSX_ICON ${CMAKE_SOURCE_DIR}/res/Throne.icns)
 if (APPLE)
-    target_sources(Throne PRIVATE ${MACOSX_ICON})
+    target_sources(ArsLink PRIVATE ${MACOSX_ICON})
 endif ()
 
-set_target_properties(Throne PROPERTIES
+set_target_properties(ArsLink PROPERTIES
         MACOSX_BUNDLE_ICON_FILE "Throne.icns"
         RESOURCE ${MACOSX_ICON}
         MACOSX_BUNDLE_INFO_PLIST ${CMAKE_SOURCE_DIR}/res/MacOSXBundleInfo.plist
-        MACOSX_BUNDLE_GUI_IDENTIFIER moe.Throne.macosx
+        MACOSX_BUNDLE_GUI_IDENTIFIER am.arslink.macosx
         MACOSX_BUNDLE TRUE
         WIN32_EXECUTABLE TRUE
         UNITY_BUILD ON
@@ -465,7 +465,7 @@ set_target_properties(Throne PROPERTIES
 set_property(SOURCE "3rdparty/SQLiteCpp/src/sqlite3.c" PROPERTY SKIP_UNITY_BUILD_INCLUSION ON)
 
 # Verified to link. OMIT_VIRTUALTABLE/VIEW/ANALYZE/CTE/WINDOWFUNC/DECLTYPE all break this build.
-target_compile_definitions(Throne PRIVATE
+target_compile_definitions(ArsLink PRIVATE
         SQLITE_DQS=0
         SQLITE_DEFAULT_MEMSTATUS=0
         SQLITE_DEFAULT_WAL_SYNCHRONOUS=1
@@ -496,19 +496,19 @@ set(TS_FILES
 set(LUPDATE_OPTIONS
         -locations none -no-obsolete
 )
-qt_add_lupdate(Throne TS_FILES ${TS_FILES} OPTIONS ${LUPDATE_OPTIONS})
-qt_add_lrelease(Throne TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
+qt_add_lupdate(ArsLink TS_FILES ${TS_FILES} OPTIONS ${LUPDATE_OPTIONS})
+qt_add_lrelease(ArsLink TS_FILES ${TS_FILES} QM_FILES_OUTPUT_VARIABLE QM_FILES)
 
 configure_file(res/translations/translations.qrc ${CMAKE_BINARY_DIR} COPYONLY)
-target_sources(Throne PRIVATE ${CMAKE_BINARY_DIR}/translations.qrc)
+target_sources(ArsLink PRIVATE ${CMAKE_BINARY_DIR}/translations.qrc)
 
 # Target Link
 
-target_link_libraries(Throne PRIVATE
+target_link_libraries(ArsLink PRIVATE
         Qt6::Widgets Qt6::Network ${QT_DBUS_LIBRARY}
         Threads::Threads
         ${NKR_EXTERNAL_TARGETS}
         ${PLATFORM_LIBRARIES}
 )
 
-qt_finalize_executable(Throne)
+qt_finalize_executable(ArsLink)

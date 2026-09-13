@@ -7,7 +7,7 @@
 # финального пакета. Job публикации релиза возвращён в минимальном виде:
 # создаёт prerelease с тегом ci-<номер запуска> и двумя архивами, чтобы
 # сборку можно было забрать анонимно без доступа к вкладке Actions.
-name: Throne build matrix
+name: ArsLink build matrix
 on:
   push:
     branches:
@@ -107,7 +107,7 @@ jobs:
       - name: Uploading Artifact
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: Throne-${{ github.sha }}-Common-${{ matrix.cross_os }}-${{ matrix.cross_arch }}
+          name: ArsLink-${{ github.sha }}-Common-${{ matrix.cross_os }}-${{ matrix.cross_arch }}
           path: artifacts.tgz
           compression-level: 0
   build-cpp:
@@ -169,7 +169,7 @@ jobs:
       - name: Download Artifacts
         uses: actions/download-artifact@v8.0.1
         with:
-          name: Throne-${{ github.sha }}-Common-${{ matrix.common }}
+          name: ArsLink-${{ github.sha }}-Common-${{ matrix.common }}
           path: download-artifact
       # ========================================================================================================= Qt Install
       - name: Install Qt
@@ -264,7 +264,7 @@ jobs:
       - name: Uploading Artifact
         uses: actions/upload-artifact@v7.0.1
         with:
-          name: Throne-${{ github.sha }}-${{ matrix.dest_suffix }}
+          name: ArsLink-${{ github.sha }}-${{ matrix.dest_suffix }}
           path: artifacts.tgz
           compression-level: 0
   # ARSMAG: минимальная публикация — только чтобы ассеты релиза можно было
@@ -281,12 +281,12 @@ jobs:
       - name: Download windows64 artifact
         uses: actions/download-artifact@v8.0.1
         with:
-          name: Throne-${{ github.sha }}-windows-amd64
+          name: ArsLink-${{ github.sha }}-windows-amd64
           path: download/windows64
       - name: Download windowslegacy64 artifact
         uses: actions/download-artifact@v8.0.1
         with:
-          name: Throne-${{ github.sha }}-windowslegacy-amd64
+          name: ArsLink-${{ github.sha }}-windowslegacy-amd64
           path: download/windowslegacy64
       - name: Repack into release archives
         shell: bash

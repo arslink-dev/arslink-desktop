@@ -41,7 +41,7 @@ void UrlScheme_Apply() {
         // entries, so the entry has to be a visible one.
         ts << "[Desktop Entry]\n"
            << "Type=Application\n"
-           << "Name=Throne\n"
+           << "Name=ArsLink\n"
            << "Icon=throne\n"
            << "Exec=\"" << execTarget() << "\" %U\n"
            << "MimeType=x-scheme-handler/throne;application/json;application/yaml;text/yaml;text/plain;\n"

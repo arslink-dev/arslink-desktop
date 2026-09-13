@@ -1,5 +1,5 @@
-Name "Throne"
-OutFile "ThroneSetup.exe"
+Name "ArsLink"
+OutFile "ArsLinkSetup.exe"
 
 ; 1. NEVER ask for UAC on launch
 RequestExecutionLevel user 
@@ -14,14 +14,14 @@ SetCompressorDictSize 64
 !include WinVer.nsh
 !include x64.nsh
 
-!define APP_DIR_NAME "Throne"
+!define APP_DIR_NAME "ArsLink"
 
 !define MUI_ICON "res\Throne.ico"
 !define MUI_ABORTWARNING
-!define MUI_WELCOMEPAGE_TITLE "Welcome to Throne Installer"
-!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of Throne."
-!define MUI_FINISHPAGE_RUN "$INSTDIR\Throne.exe"
-!define MUI_FINISHPAGE_RUN_TEXT "Launch Throne"
+!define MUI_WELCOMEPAGE_TITLE "Welcome to ArsLink Installer"
+!define MUI_WELCOMEPAGE_TEXT "This wizard will guide you through the installation of ArsLink."
+!define MUI_FINISHPAGE_RUN "$INSTDIR\ArsLink.exe"
+!define MUI_FINISHPAGE_RUN_TEXT "Launch ArsLink"
 !addplugindir .\script\
 
 ; This is the Windows constant used to draw the UAC Shield on a button
@@ -50,7 +50,7 @@ Page custom InstallModePageCreate InstallModePageLeave
 !define MUI_PAGE_CUSTOMFUNCTION_PRE SkipPageCheck
 !define MUI_PAGE_CUSTOMFUNCTION_SHOW DirectoryShow
 !define MUI_PAGE_CUSTOMFUNCTION_LEAVE DirectoryLeave
-!define MUI_DIRECTORYPAGE_TEXT_TOP "Setup will install Throne in the folder below. If the folder you choose is not named '${APP_DIR_NAME}', Setup creates a '${APP_DIR_NAME}' subfolder inside it, so uninstalling only ever removes Throne's own folder."
+!define MUI_DIRECTORYPAGE_TEXT_TOP "Setup will install ArsLink in the folder below. If the folder you choose is not named '${APP_DIR_NAME}', Setup creates a '${APP_DIR_NAME}' subfolder inside it, so uninstalling only ever removes ArsLink's own folder."
 !insertmacro MUI_PAGE_DIRECTORY
 
 !insertmacro MUI_PAGE_INSTFILES
@@ -63,7 +63,7 @@ UninstPage custom un.DataPageCreate un.DataPageLeave
 
 !insertmacro MUI_LANGUAGE "English"
 
-UninstallText "This will uninstall Throne. Do you wish to continue?"
+UninstallText "This will uninstall ArsLink. Do you wish to continue?"
 UninstallIcon "res\ThroneDel.ico"
 
 ; =====================================
@@ -80,8 +80,8 @@ Function .onInit
     StrCpy $IsAllUsers "1"
 
     ; Read the chosen installation path from the temporary registry key
-    ReadRegStr $INSTDIR HKCU "Software\Throne" "TempSetupPath"
-    DeleteRegValue HKCU "Software\Throne" "TempSetupPath" ; Clean it up immediately
+    ReadRegStr $INSTDIR HKCU "Software\ArsLink" "TempSetupPath"
+    DeleteRegValue HKCU "Software\ArsLink" "TempSetupPath" ; Clean it up immediately
 
     ${If} $INSTDIR == ""
       StrCpy $INSTDIR "$PROGRAMFILES64\${APP_DIR_NAME}"
@@ -158,7 +158,7 @@ Function DirectoryShow
 FunctionEnd
 
 Function EnsureAppSubfolder
-  ; A hand-typed "D:\Apps\" would otherwise append into "D:\Apps\\Throne".
+  ; A hand-typed "D:\Apps\" would otherwise append into "D:\Apps\\ArsLink".
   StrCpy $0 $INSTDIR "" -1
   ${If} $0 == '\'
     StrCpy $INSTDIR $INSTDIR -1
@@ -180,7 +180,7 @@ Function DirectoryLeave
     Pop $0
     ${If} $0 != "Admin"
       ; Write the chosen path safely to the registry for the elevated process to grab
-      WriteRegStr HKCU "Software\Throne" "TempSetupPath" "$INSTDIR"
+      WriteRegStr HKCU "Software\ArsLink" "TempSetupPath" "$INSTDIR"
 
       ; Trigger UAC and silently launch the elevated installer
       ExecShell "runas" "$EXEPATH" "/ELEVATED"
@@ -232,41 +232,41 @@ Section "Install"
   SetOutPath "$INSTDIR"
   SetOverwrite on
 
-  !insertmacro AbortOnRunningApp "$INSTDIR\Throne.exe"
+  !insertmacro AbortOnRunningApp "$INSTDIR\ArsLink.exe"
 
   ${If} ${IsNativeAMD64}
     ${If} ${AtLeastWaaS} 1809
       File /oname=libcronet.dll "deployment\windows-amd64\libcronet.dll"
-      File /oname=ThroneCore.exe "deployment\windows-amd64\ThroneCore.exe"
-      File /oname=Throne.exe "deployment\windows-amd64\Throne.exe"
+      File /oname=ArsLinkCore.exe "deployment\windows-amd64\ArsLinkCore.exe"
+      File /oname=ArsLink.exe "deployment\windows-amd64\ArsLink.exe"
       File /oname=updater.exe "deployment\windows-amd64\updater.exe"
     ${Else}
-      File /oname=ThroneCore.exe "deployment\windowslegacy-amd64\ThroneCore.exe"
-      File /oname=Throne.exe "deployment\windowslegacy-amd64\Throne.exe"
+      File /oname=ArsLinkCore.exe "deployment\windowslegacy-amd64\ArsLinkCore.exe"
+      File /oname=ArsLink.exe "deployment\windowslegacy-amd64\ArsLink.exe"
       File /oname=updater.exe "deployment\windowslegacy-amd64\updater.exe"
     ${EndIf}
   ${ElseIf} ${IsNativeARM64}
     File /oname=libcronet.dll "deployment\windows-arm64\libcronet.dll"
-    File /oname=ThroneCore.exe "deployment\windows-arm64\ThroneCore.exe"
-    File /oname=Throne.exe "deployment\windows-arm64\Throne.exe"
+    File /oname=ArsLinkCore.exe "deployment\windows-arm64\ArsLinkCore.exe"
+    File /oname=ArsLink.exe "deployment\windows-arm64\ArsLink.exe"
     File /oname=updater.exe "deployment\windows-arm64\updater.exe"
   ${ElseIf} ${IsNativeIA32}
-    File /oname=ThroneCore.exe "deployment\windowslegacy-386\ThroneCore.exe"
-    File /oname=Throne.exe "deployment\windowslegacy-386\Throne.exe"
+    File /oname=ArsLinkCore.exe "deployment\windowslegacy-386\ArsLinkCore.exe"
+    File /oname=ArsLink.exe "deployment\windowslegacy-386\ArsLink.exe"
     File /oname=updater.exe "deployment\windowslegacy-386\updater.exe"
   ${Else}
     Abort "Unsupported CPU architecture!"
   ${EndIf}
 
-  CreateShortcut "$DESKTOP\Throne.lnk" "$INSTDIR\Throne.exe"
-  CreateShortcut "$SMPROGRAMS\Throne.lnk" "$INSTDIR\Throne.exe" "" "$INSTDIR\Throne.exe" 0
+  CreateShortcut "$DESKTOP\ArsLink.lnk" "$INSTDIR\ArsLink.exe"
+  CreateShortcut "$SMPROGRAMS\ArsLink.lnk" "$INSTDIR\ArsLink.exe" "" "$INSTDIR\ArsLink.exe" 0
 
-  WriteRegStr SHCTX "Software\Throne" "InstallPath" "$INSTDIR"
-  WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\Throne" "DisplayName" "Throne"
-  WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\Throne" "UninstallString" "$INSTDIR\uninstall.exe"
-  WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\Throne" "InstallLocation" "$INSTDIR"
-  WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\Throne" "NoModify" 1
-  WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\Throne" "NoRepair" 1
+  WriteRegStr SHCTX "Software\ArsLink" "InstallPath" "$INSTDIR"
+  WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArsLink" "DisplayName" "ArsLink"
+  WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArsLink" "UninstallString" "$INSTDIR\uninstall.exe"
+  WriteRegStr SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArsLink" "InstallLocation" "$INSTDIR"
+  WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArsLink" "NoModify" 1
+  WriteRegDWORD SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArsLink" "NoRepair" 1
   WriteUninstaller "uninstall.exe"
 SectionEnd
 
@@ -288,7 +288,7 @@ Function un.onInit
   ${EndIf}
 
   ; Read the Admin registry to see if THIS specific folder belongs to an Admin installation
-  ReadRegStr $0 HKLM "Software\Throne" "InstallPath"
+  ReadRegStr $0 HKLM "Software\ArsLink" "InstallPath"
 
   ${If} $0 == $UninstPath
     ; --- IT IS AN ALL USERS INSTALL ---
@@ -296,7 +296,7 @@ Function un.onInit
     UserInfo::GetAccountType
     Pop $1
     ${If} $1 != "Admin"
-       MessageBox MB_YESNO|MB_ICONEXCLAMATION "Uninstalling Throne for all users requires Administrator privileges.$\n$\nDo you want to elevate?" IDNO Stay
+       MessageBox MB_YESNO|MB_ICONEXCLAMATION "Uninstalling ArsLink for all users requires Administrator privileges.$\n$\nDo you want to elevate?" IDNO Stay
        ; Elevate via UAC and explicitly pass the real folder path in quotes!
        ExecShell "runas" "$EXEPATH" '/UINSTDIR="$UninstPath"'
        Quit
@@ -316,12 +316,12 @@ FunctionEnd
 ; USER DATA PAGE
 ; =====================================
 Function un.DataPageCreate
-  !insertmacro MUI_HEADER_TEXT "Remove Settings" "Choose what to do with your Throne data."
+  !insertmacro MUI_HEADER_TEXT "Remove Settings" "Choose what to do with your ArsLink data."
 
   nsDialogs::Create 1018
   Pop $0
 
-  ${NSD_CreateLabel} 0 0 100% 24u "Throne keeps its profiles, settings and logs in the installation folder, or under your user profile when that folder is not writable."
+  ${NSD_CreateLabel} 0 0 100% 24u "ArsLink keeps its profiles, settings and logs in the installation folder, or under your user profile when that folder is not writable."
   Pop $0
 
   ${NSD_CreateCheckbox} 10u 30u 100% 12u "Delete my profiles, settings and logs"
@@ -330,7 +330,7 @@ Function un.DataPageCreate
     SendMessage $CheckDeleteData ${BM_SETCHECK} ${BST_CHECKED} 0
   ${EndIf}
 
-  ${NSD_CreateLabel} 10u 48u 100% 20u "Clear this if you plan to reinstall Throne later and want to keep them."
+  ${NSD_CreateLabel} 10u 48u 100% 20u "Clear this if you plan to reinstall ArsLink later and want to keep them."
   Pop $0
 
   nsDialogs::Show
@@ -346,15 +346,15 @@ Function un.DataPageLeave
 FunctionEnd
 
 Section "Uninstall"
-  !insertmacro AbortOnRunningApp "$INSTDIR\Throne.exe"
+  !insertmacro AbortOnRunningApp "$INSTDIR\ArsLink.exe"
 
-  Delete "$SMPROGRAMS\Throne.lnk"
-  Delete "$DESKTOP\Throne.lnk"
-  RMDir "$SMPROGRAMS\Throne"
+  Delete "$SMPROGRAMS\ArsLink.lnk"
+  Delete "$DESKTOP\ArsLink.lnk"
+  RMDir "$SMPROGRAMS\ArsLink"
 
   Delete "$INSTDIR\libcronet.dll"
-  Delete "$INSTDIR\ThroneCore.exe"
-  Delete "$INSTDIR\Throne.exe"
+  Delete "$INSTDIR\ArsLinkCore.exe"
+  Delete "$INSTDIR\ArsLink.exe"
   Delete "$INSTDIR\updater.exe"
   Delete "$INSTDIR\updater.old"
   Delete "$INSTDIR\uninstall.exe"
@@ -367,8 +367,8 @@ Section "Uninstall"
   RMDir "$INSTDIR"
 
   ; Clean up registry!
-  DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\Throne"
-  DeleteRegKey SHCTX "Software\Throne"
+  DeleteRegKey SHCTX "Software\Microsoft\Windows\CurrentVersion\Uninstall\ArsLink"
+  DeleteRegKey SHCTX "Software\ArsLink"
 
   ; Last, because SHCTX follows the shell var context and an all-users uninstall
   ; would otherwise resolve $APPDATA to ProgramData.

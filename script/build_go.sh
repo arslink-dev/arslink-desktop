@@ -40,3 +40,14 @@ popd
 VERSION_SINGBOX=$(go list -m -f '{{.Version}}' github.com/sagernet/sing-box)
 $GOCMD build -v -o $DEST -trimpath -ldflags "-w -s -X 'github.com/sagernet/sing-box/constant.Version=${VERSION_SINGBOX}' -X 'internal/godebug.defaultGODEBUG=multipathtcp=0' -checklinkname=0" -tags "$TAGS"
 popd
+
+# ARSMAG: имя выходного бинарника ядра. `go build -o <каталог>` называет файл по
+# имени модуля (`module ThroneCore` в core/server/go.mod), а имя модуля мы
+# сознательно не трогаем: это идентификатор во всех импортах ядра, его
+# переименование задевает десятки файлов и конфликтует при каждом слиянии с
+# апстримом (решение 06). Поэтому переименование делается здесь, на этапе
+# упаковки, один раз для всех платформ. Всё ниже по конвейеру (deploy_*.sh,
+# NSIS, поиск ядра в приложении) ожидает уже ArsLinkCore.
+CORE_EXT=""
+if [[ "$GOOS" == "windows" ]]; then CORE_EXT=".exe"; fi
+mv "$DEST/ThroneCore$CORE_EXT" "$DEST/ArsLinkCore$CORE_EXT"

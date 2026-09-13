@@ -5,6 +5,12 @@
 #include "include/ui/mainWindow/TestRunner.h"
 
 #include <QMenu>
+#include <QDialog>
+#include <QDialogButtonBox>
+#include <QLabel>
+#include <QVBoxLayout>
+
+#include "NkrVersion.h"
 
 #include "include/configs/sub/GroupUpdater.hpp"
 #include "include/configs/sub/RouteUpdater.hpp"
@@ -208,7 +214,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     // Prepare core
     auto core_path = QApplication::applicationDirPath() + "/";
-    core_path += "ThroneCore";
+    core_path += "ArsLinkCore";
 
     bool coreDebugMode = (Configs::dataManager->settingsRepo->log_level == "debug");
 
@@ -321,7 +327,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     }
 
     // software_name
-    software_name = "Throne";
+    software_name = "ArsLink";
     software_core_name = "sing-box";
     //
     if (auto dashDir = QDir("dashboard"); !dashDir.exists() && QDir().mkdir("dashboard")) {
@@ -376,6 +382,49 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
         m_autoSelectorDialog->activateWindow();
     });
     connect(ui->actionCheck_For_Update, &QAction::triggered, this, [=,this] { runOnNewThread([=,this] { CheckUpdate(); }); });
+
+    // ARSMAG: окно «О программе». В апстриме его не было; нам оно нужно как штатное
+    // место атрибуции. GPL-3.0 обязывает сохранять указание на происхождение кода,
+    // и это же — наш аргумент при модерации: видно, что это легальный форк, а не
+    // перепакованный клон. Текст сознательно не переводится: это юридическая часть,
+    // она держится языка LICENSE.
+    connect(ui->actionAbout, &QAction::triggered, this, [=,this] {
+        const QString version = QString(NKR_VERSION).isEmpty() ? QStringLiteral("dev") : QString(NKR_VERSION);
+        const QString body = QStringLiteral(
+            "<h3 style='margin-bottom:2px'>ArsLink</h3>"
+            "<p style='margin-top:0'>Version %1</p>"
+            "<p>A universal client for connecting to your own network infrastructure. "
+            "It ships with no preconfigured servers: you supply your own subscription link "
+            "or configuration.</p>"
+            "<p>This program is based on <b>Throne</b> "
+            "(<a href='https://github.com/throneproj/Throne'>github.com/throneproj/Throne</a>), "
+            "Copyright &copy; Throne contributors, and is distributed under the "
+            "GNU General Public License, version 3. The original copyright notices and the "
+            "full licence text are kept in the LICENSE file shipped with the source code.</p>"
+            "<p>Modified by the ArsLink project; the modifications are listed in IZMENENIYA.md. "
+            "Source code: "
+            "<a href='https://github.com/arslink-dev/arslink-desktop'>github.com/arslink-dev/arslink-desktop</a></p>"
+            "<p>Networking cores: <b>sing-box</b> (GPL-3.0) and <b>Xray-core</b> (MPL-2.0), "
+            "Copyright &copy; their respective authors.</p>"
+            "<p>This program comes with ABSOLUTELY NO WARRANTY, to the extent permitted by "
+            "applicable law.</p>"
+        ).arg(version);
+
+        QDialog dlg(GetMessageBoxParent());
+        dlg.setWindowTitle(software_name);
+        auto *layout = new QVBoxLayout(&dlg);
+        auto *label = new QLabel(body, &dlg);
+        label->setWordWrap(true);
+        label->setTextInteractionFlags(Qt::TextBrowserInteraction);
+        label->setOpenExternalLinks(true);
+        label->setMinimumWidth(480);
+        layout->addWidget(label);
+        auto *buttons = new QDialogButtonBox(QDialogButtonBox::Close, &dlg);
+        connect(buttons, &QDialogButtonBox::rejected, &dlg, &QDialog::reject);
+        connect(buttons, &QDialogButtonBox::accepted, &dlg, &QDialog::accept);
+        layout->addWidget(buttons);
+        dlg.exec();
+    });
     if (!QFile::exists(QApplication::applicationDirPath() + "/updater") && !QFile::exists(QApplication::applicationDirPath() + "/updater.exe"))
     {
         ui->actionCheck_For_Update->setDisabled(true);

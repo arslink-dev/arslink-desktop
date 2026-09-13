@@ -13,7 +13,7 @@
 // separates subkeys.
 
 static const QString kClasses = "HKEY_CURRENT_USER\\Software\\Classes";
-static const QString kProgId = "Throne.Config";
+static const QString kProgId = "ArsLink.Config";
 
 // Extensions config files usually arrive with. Registering these only adds
 // Throne to the "Open with" list; the extension keeps whatever default it has.
@@ -24,7 +24,7 @@ static QString openCommand() {
 }
 
 QString UrlScheme_DesiredState() {
-    return "v2|" + openCommand();
+    return "v3|" + openCommand();
 }
 
 void UrlScheme_Apply() {
@@ -32,12 +32,12 @@ void UrlScheme_Apply() {
     const QString exe = QDir::toNativeSeparators(QApplication::applicationFilePath());
 
     QSettings scheme(kClasses + "\\throne", QSettings::NativeFormat);
-    scheme.setValue("Default", "URL:Throne Protocol");
+    scheme.setValue("Default", "URL:ArsLink Protocol");
     scheme.setValue("URL Protocol", "");
     scheme.setValue("shell/open/command/Default", command);
 
     QSettings progId(kClasses + "\\" + kProgId, QSettings::NativeFormat);
-    progId.setValue("Default", "Throne profile");
+    progId.setValue("Default", "ArsLink profile");
     progId.setValue("DefaultIcon/Default", exe + ",0");
     progId.setValue("shell/open/command/Default", command);
 
@@ -51,7 +51,7 @@ void UrlScheme_Apply() {
     // Applications\<exe> is what "Open with > Choose another app" reads, which is
     // the only route for a config file that has no extension at all.
     QSettings app(kClasses + "\\Applications\\" + QFileInfo(exe).fileName(), QSettings::NativeFormat);
-    app.setValue("FriendlyAppName", "Throne");
+    app.setValue("FriendlyAppName", "ArsLink");
     app.setValue("shell/open/command/Default", command);
     for (const QString &ext : kConfigExtensions) {
         app.setValue("SupportedTypes/" + ext, "");
