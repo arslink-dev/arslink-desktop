@@ -289,11 +289,15 @@ void MainWindow::profile_start(int _id) {
                     QMessageBox msg(
                         QMessageBox::Information,
                         tr("Tun device misbehaving"),
-                        tr("If you have trouble starting VPN, you can force reset Core process here and then try starting the profile again. The error is %1").arg(error),
+                        // ARSMAG: честная формулировка. Кнопка перезапускает процесс ядра
+                        // и только его: виртуальный адаптер и драйвер она не трогает.
+                        tr("The Tun device could not be created. The button below restarts the core process and nothing else "
+                           "— it does not remove or repair the virtual network adapter, so it helps only when the core itself "
+                           "is stuck. The error is %1").arg(error),
                         QMessageBox::NoButton,
                         this
                     );
-                    msg.addButton(tr("Reset"), QMessageBox::ActionRole);
+                    msg.addButton(tr("Restart core"), QMessageBox::ActionRole);
                     auto cancel = msg.addButton(tr("Cancel"), QMessageBox::ActionRole);
 
                     msg.setDefaultButton(cancel);

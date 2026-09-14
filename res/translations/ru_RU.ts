@@ -4130,6 +4130,10 @@ Download them now?</source>
         <translation>Остановить тестирование</translation>
     </message>
     <message>
+        <source>Restart core</source>
+        <translation>Перезапустить ядро</translation>
+    </message>
+    <message>
         <source>Tun device misbehaving</source>
         <translation>Некорректное поведение устройства TUN</translation>
     </message>
@@ -4194,8 +4198,8 @@ Error: %1</source>
         <translation>Удалить недействительные</translation>
     </message>
     <message>
-        <source>If you have trouble starting VPN, you can force reset Core process here and then try starting the profile again. The error is %1</source>
-        <translation>Если у вас возникли проблемы с запуском режима TUN, можете принудительно сбросить процесс ядра здесь и попробовать перезапустить профиль. Ошибка: %1</translation>
+        <source>The Tun device could not be created. The button below restarts the core process and nothing else — it does not remove or repair the virtual network adapter, so it helps only when the core itself is stuck. The error is %1</source>
+        <translation>Не удалось создать устройство TUN. Кнопка ниже перезапускает процесс ядра и только его — виртуальный сетевой адаптер она не удаляет и не чинит, поэтому помогает лишь тогда, когда завис сам процесс ядра. Ошибка: %1</translation>
     </message>
     <message>
         <source>Remove %1 Unavailable item(s) ?</source>
