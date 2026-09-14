@@ -203,7 +203,12 @@ namespace Configs {
         QString vpn_implementation = "gvisor";
         bool vpn_strict_route = false;
 #elif defined(Q_OS_WIN)
-        QString vpn_implementation = WinVersion::IsBuildNumGreaterOrEqual(BuildNumber::Windows_10_1507) ? "system" : "gvisor";
+        // ARSMAG: на Windows стек по умолчанию — gvisor, а не system (решение 09).
+        // Стек `system` поднимает в системе настоящий TCP-слушатель и зависит от
+        // брандмауэра; на живой Windows 11 это рвало связь на физическом адаптере,
+        // переключение на gvisor чинило её целиком. Апстрим советует то же в #1278
+        // и #1297. Настройка остаётся пользователю: Настройки TUN -> Stack.
+        QString vpn_implementation = "gvisor";
         bool vpn_strict_route = WinVersion::IsBuildNumGreaterOrEqual(BuildNumber::Windows_10_1507);
 #else
         QString vpn_implementation = "system";
