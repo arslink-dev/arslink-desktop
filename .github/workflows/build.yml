@@ -4,7 +4,8 @@
 # Коротко: оставлены только цели windows64 и windowslegacy64, добавлена
 # проверка SHA-256 внешних бинарных загрузок (см. ZAVISIMOSTI.md),
 # srslist.h закреплён на коммит вместо ветки, updater.exe исключён из
-# финального пакета. Job публикации релиза возвращён в минимальном виде:
+# финального пакета, .pdb вынесены из пользовательского архива в отдельный
+# ассет, к релизу добавлен SHA256SUMS.txt. Job публикации релиза возвращён в минимальном виде:
 # создаёт prerelease с тегом ci-<номер запуска> и двумя архивами, чтобы
 # сборку можно было забрать анонимно без доступа к вкладке Actions.
 name: ArsLink build matrix
@@ -293,19 +294,45 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p release
-          tar xzf download/windows64/artifacts.tgz -C download/windows64
-          (cd download/windows64/deployment/windows-amd64 && zip -r "$GITHUB_WORKSPACE/release/windows64.zip" .)
-          tar xzf download/windowslegacy64/artifacts.tgz -C download/windowslegacy64
-          (cd download/windowslegacy64/deployment/windowslegacy-amd64 && zip -r "$GITHUB_WORKSPACE/release/windowslegacy64.zip" .)
+          # ARSMAG: .pdb вынесены из пользовательского архива в отдельный ассет.
+          # Символы весят больше самой программы (около 95% веса загрузки) и нужны
+          # только для разбора крэшей — заставлять пользователя качать их вместе
+          # с программой незачем. Совсем не выбрасываем: без них дампы не читаются.
+          for pair in "windows64:windows-amd64" "windowslegacy64:windowslegacy-amd64"; do
+            name="${pair%%:*}"
+            suffix="${pair##*:}"
+            tar xzf "download/$name/artifacts.tgz" -C "download/$name"
+            dir="download/$name/deployment/$suffix"
+            (cd "$dir" && zip -r "$GITHUB_WORKSPACE/release/$name.zip" . -x '*.pdb')
+            if compgen -G "$dir/*.pdb" > /dev/null; then
+              (cd "$dir" && zip -j "$GITHUB_WORKSPACE/release/$name-symbols.zip" ./*.pdb)
+            else
+              echo "ВНИМАНИЕ: в $dir нет ни одного .pdb, архив символов не создан" >&2
+            fi
+          done
+          # ARSMAG: контрольные суммы считаются по файлам ровно в том виде, в каком
+          # они уходят в релиз, и публикуются отдельным ассетом — README советует
+          # пользователю сверять SHA-256 после загрузки.
+          (cd release && sha256sum *.zip > SHA256SUMS.txt)
+          echo "--- содержимое релиза ---"
+          ls -l release
+          cat release/SHA256SUMS.txt
       - name: Create prerelease
         shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           set -euo pipefail
+          # ARSMAG: release/* — оба пользовательских архива, оба архива символов
+          # и SHA256SUMS.txt. Перечисление по маске, а не поимённо: архив символов
+          # может отсутствовать, если сборка не выдала .pdb.
           gh release create "ci-${{ github.run_number }}" \
-            release/windows64.zip release/windowslegacy64.zip \
+            release/* \
             --repo "${{ github.repository }}" \
             --title "CI сборка #${{ github.run_number }}" \
             --prerelease \
-            --notes "Автоматическая сборка по push в main, коммит ${{ github.sha }}. Не релиз для пользователей."
+            --notes "Автоматическая сборка по push в main, коммит ${{ github.sha }}. Не релиз для пользователей.
+
+          windows64.zip / windowslegacy64.zip — программа.
+          *-symbols.zip — отладочные символы, нужны только для разбора крэшей.
+          SHA256SUMS.txt — контрольные суммы всех архивов."
