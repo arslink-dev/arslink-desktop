@@ -110,7 +110,7 @@ namespace {
     // token may actually do under Program Files.
     bool DirIsWritable(const QDir &dir) {
         if (!dir.exists() && !QDir().mkpath(dir.absolutePath())) return false;
-        QFile probe(dir.absoluteFilePath(".throne-write-test"));
+        QFile probe(dir.absoluteFilePath(".arslink-write-test"));
         if (!probe.open(QIODevice::WriteOnly)) return false;
         probe.close();
         probe.remove();
@@ -119,7 +119,7 @@ namespace {
 
     bool ConfigDirIsUsable(const QDir &configDir) {
         if (!DirIsWritable(configDir)) return false;
-        const QString db = configDir.absoluteFilePath("throne.db");
+        const QString db = configDir.absoluteFilePath("arslink.db");
         if (!QFile::exists(db)) return true;
         QFile file(db);
         return file.open(QIODevice::ReadWrite);
@@ -151,7 +151,7 @@ namespace {
 
         const QString userConfig = userWd.absoluteFilePath("config");
         QDir().mkpath(userConfig);
-        if (!QFile::exists(userConfig + "/throne.db") && QFile::exists(installConfig + "/throne.db")) {
+        if (!QFile::exists(userConfig + "/arslink.db") && QFile::exists(installConfig + "/arslink.db")) {
             CopyDirContents(installConfig, userConfig);
             LOG_WARN(QString("copied existing config from %1").arg(installConfig));
         }
@@ -255,7 +255,7 @@ int main(int argc, char* argv[]) {
     appStartEpoch = QDateTime::currentSecsSinceEpoch();
 
     // Load database
-    Configs::initDB(QString(QDir::currentPath() + QDir::separator() + "throne.db").toStdString());
+    Configs::initDB(QString(QDir::currentPath() + QDir::separator() + "arslink.db").toStdString());
 
     Logging::SetLevel(Logging::LevelFromString(Configs::dataManager->settingsRepo->log_file_level));
 

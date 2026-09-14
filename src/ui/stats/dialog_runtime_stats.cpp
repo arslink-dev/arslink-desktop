@@ -121,9 +121,12 @@ void DialogRuntimeStats::refreshLive() {
     ui->vRouteUpdate->setText(nextUpd(settings->route_auto_update, settings->route_auto_update_last));
 
     // --- On-disk size of the databases (main + stats, incl. WAL/SHM sidecars) ---
+    // ARSMAG: маска обязана совпадать с именами баз. Парные литералы:
+    // "arslink.db" в src/main.cpp и "arslink_stats.db" в
+    // src/database/DatabaseManager.cpp. При переименовании базы править все три.
     qint64 dbBytes = 0;
     const QDir dir(QDir::currentPath());
-    for (const QFileInfo& fi : dir.entryInfoList(QStringList{QStringLiteral("throne*.db*")}, QDir::Files))
+    for (const QFileInfo& fi : dir.entryInfoList(QStringList{QStringLiteral("arslink*.db*")}, QDir::Files))
         dbBytes += fi.size();
     ui->vDbSize->setText(ReadableSize(dbBytes));
 

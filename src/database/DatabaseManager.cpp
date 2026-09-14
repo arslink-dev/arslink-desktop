@@ -12,7 +12,9 @@
 namespace Configs {
     std::string DatabaseManager::deriveStatsDbPath(const std::string& dbPath) {
         const QFileInfo fi(QString::fromStdString(dbPath));
-        return QDir(fi.absolutePath()).filePath("throne_stats.db").toStdString();
+        // ARSMAG: имя базы статистики. Парные литералы: "arslink.db" в src/main.cpp
+        // и маска "arslink*.db*" в src/ui/stats/dialog_runtime_stats.cpp.
+        return QDir(fi.absolutePath()).filePath("arslink_stats.db").toStdString();
     }
 
     DatabaseManager::DatabaseManager(const std::string& dbPath)

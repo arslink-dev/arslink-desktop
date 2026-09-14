@@ -53,7 +53,9 @@ namespace Configs {
             constexpr auto tunIn = "tun-in";
             constexpr auto redirectIn = "hijack";
             constexpr auto dnsServerIn = "hijack-dns";
-            constexpr auto xrayFullConfigIn = "throne-bridge";
+            // ARSMAG: тег bridge-инбаунда Xray. Попадает в каждую строку лога
+            // соединений ("[arslink-bridge -> proxy]"), поэтому имя пользовательское.
+            constexpr auto xrayFullConfigIn = "arslink-bridge";
 
             constexpr auto adblockRuleSet = "throne-adblocksingbox";
 

@@ -360,7 +360,7 @@ Section "Uninstall"
   Delete "$INSTDIR\uninstall.exe"
 
   ${If} $DeleteUserData == 1
-  ${AndIf} ${FileExists} "$INSTDIR\config\throne.db"
+  ${AndIf} ${FileExists} "$INSTDIR\config\arslink.db"
     RMDir /r "$INSTDIR\config"
   ${EndIf}
 
