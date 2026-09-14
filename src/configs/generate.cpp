@@ -344,7 +344,7 @@ namespace Configs {
         }
 
         QString genTunName() {
-            auto tun_name = "throne-tun";
+            auto tun_name = "arslink-tun";
 #ifdef Q_OS_MACOS
             tun_name = "";
 #endif
