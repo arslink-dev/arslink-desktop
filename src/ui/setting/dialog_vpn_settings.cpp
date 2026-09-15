@@ -111,13 +111,17 @@ void DialogVPNSettings::on_troubleshooting_clicked() {
     QMessageBox msg(
         QMessageBox::Information,
         tr("Troubleshooting"),
-        tr("If you have trouble starting VPN, you can force reset Core process here.\n\n"
+        // ARSMAG: честная формулировка, та же, что в окне ошибки TUN. Кнопка
+        // перезапускает процесс ядра и только его: виртуальный адаптер и драйвер
+        // она не трогает. Парный текст — src/ui/mainWindow/mainwindow_profile_lifecycle.cpp.
+        tr("The button below restarts the core process and nothing else — it does not remove or repair "
+            "the virtual network adapter, so it helps only when the core itself is stuck.\n\n"
             "If still not working, see documentation for more information.\n"
             "https://matsuridayo.github.io/n-configuration/#vpn-tun"),
         QMessageBox::NoButton,
         this
     );
-    msg.addButton(tr("Reset"), QMessageBox::ActionRole);
+    msg.addButton(tr("Restart core"), QMessageBox::ActionRole);
     auto cancel = msg.addButton(tr("Cancel"), QMessageBox::ActionRole);
 
     msg.setDefaultButton(cancel);

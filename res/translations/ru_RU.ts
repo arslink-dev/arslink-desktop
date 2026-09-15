@@ -2269,14 +2269,18 @@ For more information, see the document &quot;Configuration/DNS&quot;.</source>
         <translation>Диагностика</translation>
     </message>
     <message>
-        <source>If you have trouble starting VPN, you can force reset Core process here.
+        <source>The button below restarts the core process and nothing else — it does not remove or repair the virtual network adapter, so it helps only when the core itself is stuck.
 
 If still not working, see documentation for more information.
 https://matsuridayo.github.io/n-configuration/#vpn-tun</source>
-        <translation>Если возникают проблемы с запуском режима TUN, здесь вы можете принудительно сбросить процесс ядра.
+        <translation>Кнопка ниже перезапускает процесс ядра и только его — виртуальный сетевой адаптер она не удаляет и не чинит, поэтому помогает лишь тогда, когда завис сам процесс ядра.
 
 Если ничего по-прежнему не работает, ознакомьтесь с документацией:
 https://matsuridayo.github.io/n-configuration/#vpn-tun</translation>
+    </message>
+    <message>
+        <source>Restart core</source>
+        <translation>Перезапустить ядро</translation>
     </message>
     <message>
         <source>Reset</source>
