@@ -353,11 +353,14 @@ private:
 
     void handle_import_route(const QString &url);
 
-    // throne://remoteRoute?data=<...> : add one or more remote routing profiles. The data is
+    // arslink://remoteRoute?data=<...> : add one or more remote routing profiles. The data is
     // (base64 of) a JSON array of {url, auto_update[, name]} objects.
-    void handle_add_remote_routes(const QString &url);
+    // ARSMAG: downloadedContent=true только для текста, который мы сами скачали по
+    // известному адресу (меню «Download Profiles»). Такой текст у апстрима приходит
+    // под их схемой, и это формат данных, а не ссылка пользователя (решение 10, п.2).
+    void handle_add_remote_routes(const QString &url, bool downloadedContent = false);
 
-    // Routes user-supplied text: throne:// links go to the deeplink handler, the
+    // Routes user-supplied text: arslink:// links go to the deeplink handler, the
     // rest to the subscription/profile importer.
     void import_or_handle_deeplink(const QString &text);
 

@@ -110,7 +110,7 @@ namespace MwArg {
 }
 
 inline std::function<void(MwMessage, QStringList)> MW_dialog_message;
-// Handles a "throne://" deeplink. Set by MainWindow; marshals to the UI thread.
+// Handles a "arslink://" deeplink. Set by MainWindow; marshals to the UI thread.
 inline std::function<void(QString)> MW_handle_deeplink;
 
 // Imports config files the OS handed us ("Open with Throne"). Set by MainWindow;
@@ -165,6 +165,14 @@ QStringList SplitAndTrim(const QString& raw, const QString& seperator, bool keep
 // Base64
 
 QByteArray DecodeB64IfValid(const QString &input, QByteArray::Base64Options options = QByteArray::Base64Option::Base64Encoding);
+
+// ARSMAG: полезная нагрузка ссылки arslink://<команда>/<base64> (решение 10, п.4).
+// Мы сами производим ссылки в URL-safe алфавите без выравнивания, а разбирали
+// строго стандартным алфавитом — из-за чего своя же ссылка не импортировалась,
+// как только в данных попадался '-' или '_'. Здесь принимаются оба алфавита
+// (они не пересекаются, поэтому неоднозначности нет) и выравнивание как
+// обязательным, так и отсутствующим. Пустой результат = разобрать не удалось.
+QByteArray DecodeB64Deeplink(const QString &input);
 
 // URL
 

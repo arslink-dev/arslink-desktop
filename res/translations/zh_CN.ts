@@ -5247,8 +5247,8 @@ outbounds and other ArsLink features may break. For advanced users only.</source
         <translation></translation>
     </message>
     <message>
-        <source>https://... (throne://route link, base64, or JSON)</source>
-        <translation>https://... (throne://路由链接, base64 或 JSON)</translation>
+        <source>https://... (arslink://route link, base64, or JSON)</source>
+        <translation>https://... (arslink://路由链接, base64 或 JSON)</translation>
     </message>
     <message>
         <source>Re-fetch this profile from the URL when subscriptions auto-update.

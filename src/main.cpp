@@ -38,7 +38,7 @@
 #ifdef Q_OS_MACOS
 #include <QFileOpenEvent>
 
-// On macOS the OS reuses the running app and delivers throne:// URLs, as well as
+// On macOS the OS reuses the running app and delivers arslink:// URLs, as well as
 // files opened with the app, as a QFileOpenEvent to the application object (never
 // via argv). This filter feeds both into the common pipelines.
 class MacOpenEventFilter : public QObject {
@@ -50,7 +50,7 @@ protected:
         if (event->type() == QEvent::FileOpen) {
             const auto openEvent = static_cast<QFileOpenEvent *>(event);
             const QString url = openEvent->url().toString();
-            if (url.startsWith("throne://")) {
+            if (url.startsWith(Configs::Deeplink::Prefix, Qt::CaseInsensitive)) {
                 Deeplink_Submit(url);
                 return true;
             }
@@ -204,7 +204,7 @@ int main(int argc, char* argv[]) {
 #endif
 
     QStringList arguments = QApplication::arguments();
-    // A throne:// URL may be passed as a launch argument (Windows/Linux), and so may
+    // An arslink:// URL may be passed as a launch argument (Windows/Linux), and so may
     // config files opened with the app. Both are delivered after the window is up, or
     // forwarded to the primary instance via the socket below. Files are resolved
     // before the working directory moves, since their paths may be relative to it.
@@ -341,7 +341,7 @@ int main(int argc, char* argv[]) {
     {
         qDebug() << "Another instance is running, let's wake it up and quit";
         // Hand off whatever we were launched with so the primary instance handles it:
-        // one item per line, a throne:// url or a file:// url. Paths go over as urls
+        // one item per line, a arslink:// url or a file:// url. Paths go over as urls
         // so that a name containing a newline cannot break the framing.
         QStringList payload;
         if (!launchDeeplink.isEmpty()) payload << launchDeeplink;
@@ -380,7 +380,7 @@ int main(int argc, char* argv[]) {
         // carries no trailing newline, is flushed once the peer is done.
         auto pending = std::make_shared<QByteArray>();
         auto handleLine = [](const QString &line) {
-            if (line.startsWith("throne://")) {
+            if (line.startsWith(Configs::Deeplink::Prefix, Qt::CaseInsensitive)) {
                 Deeplink_Submit(line);
             } else if (line.startsWith("file://")) {
                 LaunchFiles_Submit({QUrl(line).toLocalFile()});

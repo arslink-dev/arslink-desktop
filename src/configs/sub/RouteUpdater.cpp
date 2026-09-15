@@ -20,7 +20,11 @@ namespace RouteUpdate {
 
         QString fatal, warn;
         bool wasOldArray = false;
-        auto fetched = Configs::RouteProfile::FromShareInput(QString::fromUtf8(resp.data), &fatal, &warn, &wasOldArray);
+        // ARSMAG: содержимое скачано нами по адресу, который хранится в профиле, —
+        // это формат данных, а не ссылка пользователя, поэтому чужая схема в префиксе
+        // допустима (решение 10, п.2). Иначе профили апстрима («Bypass Russia» и
+        // соседние) перестали бы обновляться.
+        auto fetched = Configs::RouteProfile::FromShareInput(QString::fromUtf8(resp.data), &fatal, &warn, &wasOldArray, true);
         if (!fetched) return fatal.isEmpty() ? QObject::tr("could not parse a routing profile from the response") : fatal;
         if (fetched->isRaw) return QObject::tr("the remote content is a raw routing profile, which is not supported for remote profiles yet");
 

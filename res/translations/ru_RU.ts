@@ -2269,14 +2269,8 @@ For more information, see the document &quot;Configuration/DNS&quot;.</source>
         <translation>Диагностика</translation>
     </message>
     <message>
-        <source>The button below restarts the core process and nothing else — it does not remove or repair the virtual network adapter, so it helps only when the core itself is stuck.
-
-If still not working, see documentation for more information.
-https://matsuridayo.github.io/n-configuration/#vpn-tun</source>
-        <translation>Кнопка ниже перезапускает процесс ядра и только его — виртуальный сетевой адаптер она не удаляет и не чинит, поэтому помогает лишь тогда, когда завис сам процесс ядра.
-
-Если ничего по-прежнему не работает, ознакомьтесь с документацией:
-https://matsuridayo.github.io/n-configuration/#vpn-tun</translation>
+        <source>The button below restarts the core process and nothing else — it does not remove or repair the virtual network adapter, so it helps only when the core itself is stuck.</source>
+        <translation>Кнопка ниже перезапускает процесс ядра и только его — виртуальный сетевой адаптер она не удаляет и не чинит, поэтому помогает лишь тогда, когда завис сам процесс ядра.</translation>
     </message>
     <message>
         <source>Restart core</source>
@@ -5215,8 +5209,8 @@ outbounds и другие функции ArsLink. Только для опытн
         <translation>URL</translation>
     </message>
     <message>
-        <source>https://... (throne://route link, base64, or JSON)</source>
-        <translation>https://... (throne://route link, base64, или JSON)</translation>
+        <source>https://... (arslink://route link, base64, or JSON)</source>
+        <translation>https://... (arslink://route link, base64, или JSON)</translation>
     </message>
     <message>
         <source>Re-fetch this profile from the URL when subscriptions auto-update.

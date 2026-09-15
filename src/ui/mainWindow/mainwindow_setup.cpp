@@ -149,7 +149,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     AutoRun_FixTaskIfNeeded();
     AutoRun_MigrateIfNeeded();
 
-    // register the throne:// URL scheme and the config file handler (self-heals if
+    // register the arslink:// URL scheme and the config file handler (self-heals if
     // the install was moved)
     UrlScheme_RegisterIfNeeded();
 
@@ -978,7 +978,11 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
                     });
                     return;
                 }
-                handle_add_remote_routes(resp.data);
+                // ARSMAG: это скачанный нами файл апстрима, а не ссылка пользователя —
+                // он приходит под схемой апстрима, и разбирать его надо без требования
+                // нашей схемы, иначе молча отвалится профиль «Bypass Russia»
+                // (решение 10, п.2).
+                handle_add_remote_routes(resp.data, true);
             });
             profilesMenu->addAction(action);
         }

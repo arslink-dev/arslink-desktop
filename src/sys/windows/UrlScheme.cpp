@@ -1,5 +1,7 @@
 #include "include/sys/UrlScheme.hpp"
 
+#include "include/global/Const.hpp"
+
 #include <QApplication>
 #include <QDir>
 #include <QFileInfo>
@@ -16,7 +18,7 @@ static const QString kClasses = "HKEY_CURRENT_USER\\Software\\Classes";
 static const QString kProgId = "ArsLink.Config";
 
 // Extensions config files usually arrive with. Registering these only adds
-// Throne to the "Open with" list; the extension keeps whatever default it has.
+// ArsLink to the "Open with" list; the extension keeps whatever default it has.
 static const QStringList kConfigExtensions = {".json", ".conf", ".yaml", ".yml", ".ini", ".txt"};
 
 static QString openCommand() {
@@ -24,14 +26,20 @@ static QString openCommand() {
 }
 
 QString UrlScheme_DesiredState() {
-    return "v3|" + openCommand();
+    // ARSMAG: ревизия поднята с v3 при переименовании схемы throne -> arslink
+    // (решение 10). Без подъёма установки, которые не переезжали, не
+    // перерегистрируются: программа решит, что всё уже сделано, и в системе
+    // останется только старая схема.
+    return "v4|" + openCommand();
 }
 
 void UrlScheme_Apply() {
     const QString command = openCommand();
     const QString exe = QDir::toNativeSeparators(QApplication::applicationFilePath());
 
-    QSettings scheme(kClasses + "\\throne", QSettings::NativeFormat);
+    // ARSMAG: имя ключа = наша схема ссылок. Парный литерал —
+    // Configs::Deeplink::Scheme в include/global/Const.hpp.
+    QSettings scheme(kClasses + "\\" + Configs::Deeplink::Scheme, QSettings::NativeFormat);
     scheme.setValue("Default", "URL:ArsLink Protocol");
     scheme.setValue("URL Protocol", "");
     scheme.setValue("shell/open/command/Default", command);

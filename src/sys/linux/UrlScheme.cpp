@@ -1,5 +1,7 @@
 #include "include/sys/UrlScheme.hpp"
 
+#include "include/global/Const.hpp"
+
 #include <QApplication>
 #include <QDir>
 #include <QFile>
@@ -9,7 +11,7 @@
 #include <QStandardPaths>
 #include <QTextStream>
 
-static const QString kDesktopId = "throne-url-handler.desktop";
+static const QString kDesktopId = "arslink-url-handler.desktop";
 
 // For AppImage the launcher must point at the outer image ($APPIMAGE), not the
 // extracted binary inside the mount, which disappears after exit.
@@ -25,7 +27,9 @@ static QString desktopFilePath() {
 }
 
 QString UrlScheme_DesiredState() {
-    return "v2|" + execTarget();
+    // ARSMAG: ревизия поднята с v2 при переименовании схемы (решение 10) — см.
+    // тот же комментарий в src/sys/windows/UrlScheme.cpp.
+    return "v3|" + execTarget();
 }
 
 void UrlScheme_Apply() {
@@ -36,15 +40,17 @@ void UrlScheme_Apply() {
     if (f.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream ts(&f);
         // The config mime types are declared but never claimed as a default, which
-        // puts Throne in the file manager's "Open With" list without taking .json
+        // puts ArsLink in the file manager's "Open With" list without taking .json
         // away from whatever the user reads it with. That list skips NoDisplay
         // entries, so the entry has to be a visible one.
+        // ARSMAG: схема — Configs::Deeplink::Scheme (include/global/Const.hpp).
         ts << "[Desktop Entry]\n"
            << "Type=Application\n"
            << "Name=ArsLink\n"
-           << "Icon=throne\n"
+           << "Icon=arslink\n"
            << "Exec=\"" << execTarget() << "\" %U\n"
-           << "MimeType=x-scheme-handler/throne;application/json;application/yaml;text/yaml;text/plain;\n"
+           << "MimeType=x-scheme-handler/" << Configs::Deeplink::Scheme
+           << ";application/json;application/yaml;text/yaml;text/plain;\n"
            << "Terminal=false\n";
         ts.flush();
         f.close();
@@ -54,5 +60,5 @@ void UrlScheme_Apply() {
     // may be absent on minimal systems; execute() just returns nonzero then.
     const QString appsDir = QStandardPaths::writableLocation(QStandardPaths::ApplicationsLocation);
     QProcess::execute("update-desktop-database", {appsDir});
-    QProcess::execute("xdg-mime", {"default", kDesktopId, "x-scheme-handler/throne"});
+    QProcess::execute("xdg-mime", {"default", kDesktopId, "x-scheme-handler/" + Configs::Deeplink::Scheme});
 }

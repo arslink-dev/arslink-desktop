@@ -39,7 +39,7 @@
 			<string>am.arslink.macosx</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>throne</string>
+				<string>arslink</string>
 			</array>
 		</dict>
 	</array>

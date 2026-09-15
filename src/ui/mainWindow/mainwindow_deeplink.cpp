@@ -121,7 +121,7 @@ void MainWindow::importFromFiles(const QStringList &paths)
 
 void MainWindow::handle_deeplink_impl(const QString &url) {
     const QUrl u(url);
-    // QUrl lowercases the host, so "throne://AddSub/" arrives with host "addsub".
+    // QUrl lowercases the host, so "arslink://AddSub/" arrives with host "addsub".
     const QString cmd = u.host();
 
     if (cmd.compare("add", Qt::CaseInsensitive) == 0) {
@@ -147,7 +147,7 @@ void MainWindow::handle_deeplink_impl(const QString &url) {
         return;
     }
 
-    const QString data = DecodeB64IfValid(base64);
+    const QString data = DecodeB64Deeplink(base64);
     if (data.isEmpty()) return;
     const QUrl link(data);
     if (!link.isValid()) return;
@@ -181,10 +181,10 @@ void MainWindow::handle_import_route(const QString &url) {
     Configs::dataManager->routesRepo->AddRouteProfile(profile);
 }
 
-void MainWindow::handle_add_remote_routes(const QString &url) {
+void MainWindow::handle_add_remote_routes(const QString &url, bool downloadedContent) {
     bool wasRemoteRouteLink = false;
     QString error;
-    auto profiles = Configs::RouteProfile::FromRemoteRoutesLink(url, &wasRemoteRouteLink, &error);
+    auto profiles = Configs::RouteProfile::FromRemoteRoutesLink(url, &wasRemoteRouteLink, &error, downloadedContent);
     if (profiles.isEmpty()) {
         MessageBoxWarning(tr("Add remote routing profiles"),
                           error.isEmpty() ? tr("The link did not contain any valid remote routing profiles.") : error);
@@ -251,7 +251,7 @@ void MainWindow::handle_addsub(const QString &url, const QString &name) {
 }
 
 void MainWindow::import_or_handle_deeplink(const QString &text) {
-    if (const QString trimmed = text.trimmed(); trimmed.startsWith("throne://")) {
+    if (const QString trimmed = text.trimmed(); trimmed.startsWith(Configs::Deeplink::Prefix, Qt::CaseInsensitive)) {
         handle_deeplink_impl(trimmed);
         return;
     }

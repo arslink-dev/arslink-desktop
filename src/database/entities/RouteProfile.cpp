@@ -2,6 +2,7 @@
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QUrlQuery>
+#include <QRegularExpression>
 #include "include/database/entities/RouteProfile.h"
 #include <iostream>
 
@@ -335,10 +336,27 @@ namespace Configs {
     QString RouteProfile::ToShareLink() {
         const auto json = QJsonDocument(ToShareObject()).toJson(QJsonDocument::Compact);
         const auto b64 = json.toBase64(QByteArray::Base64UrlEncoding | QByteArray::OmitTrailingEquals);
-        return QStringLiteral("throne://route/") + QString::fromLatin1(b64);
+        return Deeplink::Prefix + "route/" + QString::fromLatin1(b64);
     }
 
-    std::shared_ptr<RouteProfile> RouteProfile::FromShareInput(const QString& input, QString* fatalError, QString* warnings, bool* wasOldArray) {
+    namespace {
+        // ARSMAG (решение 10, п.2): ссылка вида <схема>://<команда>/<данные>.
+        // Своя схема принимается всегда. Чужая — только когда downloadedContent,
+        // то есть для текста, который мы сами скачали по известному адресу:
+        // встроенные профили маршрутизации апстрим отдаёт под своей схемой, и это
+        // формат данных, а не ссылка, по которой кликнул пользователь. Схему в
+        // системе мы при этом не занимаем — регистрируется только наша.
+        bool deeplinkMatches(const QString& text, const QString& command, bool downloadedContent) {
+            if (text.startsWith(Deeplink::Prefix + command + "/", Qt::CaseInsensitive)) return true;
+            if (!downloadedContent) return false;
+            const QRegularExpression anyScheme(
+                "^[A-Za-z][A-Za-z0-9+.-]*://" + QRegularExpression::escape(command) + "/",
+                QRegularExpression::CaseInsensitiveOption);
+            return anyScheme.match(text).hasMatch();
+        }
+    }
+
+    std::shared_ptr<RouteProfile> RouteProfile::FromShareInput(const QString& input, QString* fatalError, QString* warnings, bool* wasOldArray, bool downloadedContent) {
         if (wasOldArray) *wasOldArray = false;
         QString text = input.trimmed();
         if (text.isEmpty()) {
@@ -346,8 +364,8 @@ namespace Configs {
             return nullptr;
         }
 
-        // throne://route/<base64> deep link
-        if (text.startsWith("throne://route/", Qt::CaseInsensitive)) {
+        // arslink://route/<base64> deep link
+        if (deeplinkMatches(text, "route", downloadedContent)) {
             const QUrl u(text);
             if (!u.isValid()) {
                 fatalError->append("Deep link is invalid");
@@ -426,10 +444,10 @@ namespace Configs {
         return nullptr;
     }
 
-    QList<std::shared_ptr<RouteProfile>> RouteProfile::FromRemoteRoutesLink(const QString& input, bool* wasRemoteRouteLink, QString* error) {
+    QList<std::shared_ptr<RouteProfile>> RouteProfile::FromRemoteRoutesLink(const QString& input, bool* wasRemoteRouteLink, QString* error, bool downloadedContent) {
         if (wasRemoteRouteLink) *wasRemoteRouteLink = false;
         const QString text = input.trimmed();
-        if (!text.startsWith("throne://remoteroute/", Qt::CaseInsensitive)) return {};
+        if (!deeplinkMatches(text, "remoteroute", downloadedContent)) return {};
         if (wasRemoteRouteLink) *wasRemoteRouteLink = true;
 
         const QUrl u(text);
@@ -442,7 +460,7 @@ namespace Configs {
             if (error) *error = "Deep link has no data";
             return {};
         }
-        const QString data = DecodeB64IfValid(base64);
+        const QString data = DecodeB64Deeplink(base64);
         if (data.isEmpty()) {
             if (error) *error = "Base64 is invalid.";
             return {};

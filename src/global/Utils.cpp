@@ -1,5 +1,7 @@
 #include "include/global/Utils.hpp"
 
+#include "include/global/Const.hpp"
+
 #include "3rdparty/QThreadCreateThread.hpp"
 
 #include <random>
@@ -54,6 +56,27 @@ QByteArray DecodeB64IfValid(const QString &input, QByteArray::Base64Options opti
         return result.decoded;
     }
     return {};
+}
+
+QByteArray DecodeB64Deeplink(const QString &input) {
+    QString payload = input.trimmed();
+    if (payload.isEmpty()) return {};
+
+    // Дополняем выравнивание, если его нет: наши же ссылки выпускаются с
+    // OmitTrailingEquals. Длина с остатком 1 невозможна для корректного base64.
+    switch (payload.size() % 4) {
+        case 1: return {};
+        case 2: payload += "=="; break;
+        case 3: payload += "="; break;
+        default: break;
+    }
+
+    // Алфавиты различаются только символами 62 и 63 ('+' '/' против '-' '_'),
+    // поэтому одна строка не может быть валидной в обоих смыслах одновременно.
+    if (auto standard = DecodeB64IfValid(payload, QByteArray::Base64Encoding); !standard.isEmpty()) {
+        return standard;
+    }
+    return DecodeB64IfValid(payload, QByteArray::Base64UrlEncoding);
 }
 
 QStringList SplitAndTrim(const QString& raw, const QString& separator, bool keepEmpty) {
@@ -393,13 +416,13 @@ static QString g_pendingDeeplink;
 
 QString Deeplink_ExtractFromArgs(const QStringList &args) {
     for (const auto &arg : args) {
-        if (arg.startsWith("throne://")) return arg;
+        if (arg.startsWith(Configs::Deeplink::Prefix, Qt::CaseInsensitive)) return arg;
     }
     return {};
 }
 
 void Deeplink_Submit(const QString &url) {
-    if (url.isEmpty() || !url.startsWith("throne://")) return;
+    if (url.isEmpty() || !url.startsWith(Configs::Deeplink::Prefix, Qt::CaseInsensitive)) return;
     if (MW_handle_deeplink) {
         MW_handle_deeplink(url);
     } else {
@@ -426,7 +449,7 @@ QStringList LaunchFiles_ExtractFromArgs(const QStringList &args, const QDir &lau
             if (arg == "-appdata") i++;
             continue;
         }
-        if (arg.startsWith("throne://")) continue;
+        if (arg.startsWith(Configs::Deeplink::Prefix, Qt::CaseInsensitive)) continue;
 
         // Desktop launchers hand over file:// URLs, terminals plain paths, and a
         // relative path resolves against the directory we were launched from -

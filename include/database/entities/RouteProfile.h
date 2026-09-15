@@ -41,7 +41,7 @@ namespace Configs {
         QString rawRoute = "";
         bool preventModifications = false;
 
-        // Remote profiles fetch their rules from a URL (content may be a throne://route deep
+        // Remote profiles fetch their rules from a URL (content may be a arslink://route deep
         // link, its base64, or the JSON share object). The profile is a normal *structured*
         // profile locally and stays user-editable; a manual/auto update re-fetches from
         // remoteURL and overwrites the rules (the local name is kept). Raw remote profiles
@@ -62,21 +62,26 @@ namespace Configs {
         // Lossless share schema: a tagged JSON object carrying the profile name, default
         // outbound and every rule (with its simple/advanced type).
         QJsonObject ToShareObject();
-        // ToShareObject() compacted, base64url-encoded, wrapped as throne://route/<...>
+        // ToShareObject() compacted, base64url-encoded, wrapped as arslink://route/<...>
         QString ToShareLink();
-        // Parse any shared form: a throne://route link, a base64 blob, a raw share object,
+        // Parse any shared form: an arslink://route link, a base64 blob, a raw share object,
         // or a legacy bare rule array. Returns nullptr and fills *fatalError on failure;
         // non-fatal notes (e.g. outbound fallbacks) go to *warnings. *wasOldArray is set
         // true when the input was a legacy array (no name / default outbound to import).
-        static std::shared_ptr<RouteProfile> FromShareInput(const QString& input, QString* fatalError, QString* warnings, bool* wasOldArray);
+        //
+        // ARSMAG: downloadedContent=true допускает чужую схему в префиксе ссылки и
+        // ставится ТОЛЬКО там, где текст скачан нами по известному адресу (обновление
+        // удалённого профиля). Для текста, который ввёл или вставил пользователь,
+        // принимается единственная схема — наша (решение 10, п.2).
+        static std::shared_ptr<RouteProfile> FromShareInput(const QString& input, QString* fatalError, QString* warnings, bool* wasOldArray, bool downloadedContent = false);
 
-        // Parse a throne://remoteRoute/<...> deep link into unsaved remote route profiles
+        // Parse an arslink://remoteRoute/<...> deep link into unsaved remote route profiles
         // (id=-1, isRemote, remoteURL, autoUpdate, name defaulting to the URL host). *wasRemoteRouteLink
         // is set true when the input is a remoteRoute link at all (even if its payload is invalid);
         // on a bad payload the list is empty and *error explains why. Returns {} with
         // *wasRemoteRouteLink=false when the input isn't a remoteRoute link, so callers can fall
-        // through to other formats.
-        static QList<std::shared_ptr<RouteProfile>> FromRemoteRoutesLink(const QString& input, bool* wasRemoteRouteLink, QString* error);
+        // through to other formats. downloadedContent — см. FromShareInput.
+        static QList<std::shared_ptr<RouteProfile>> FromRemoteRoutesLink(const QString& input, bool* wasRemoteRouteLink, QString* error, bool downloadedContent = false);
 
         // Raw-profile helpers: recursively collect referenced outbound ids (from `outbound`
         // and top-level `final` fields) and translate those numeric ids to sing-box tags.

@@ -2,7 +2,7 @@
 
 #include <QString>
 
-// Registration of the "throne://" URL scheme with the OS, and of the app as a
+// Registration of the "arslink://" URL scheme with the OS, and of the app as a
 // handler for config files ("Open with Throne"). Both describe the same install
 // to the same OS registry, so they are written together.
 //

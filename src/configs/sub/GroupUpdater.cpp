@@ -261,11 +261,11 @@ namespace Subscription {
             ent->outbound->ParseFromJson(data);
         }
 
-        // throne://add/ deep link
-        if (str.startsWith("throne://add/", Qt::CaseInsensitive)) {
+        // arslink://add/ deep link
+        if (str.startsWith(Configs::Deeplink::Prefix + "add/", Qt::CaseInsensitive)) {
             auto link = QUrl(str);
             if (!link.isValid()) return;
-            auto dataBytes = DecodeB64IfValid(link.path().mid(1));
+            auto dataBytes = DecodeB64Deeplink(link.path().mid(1));
             if (dataBytes.isEmpty()) return;
             auto data = QJsonDocument::fromJson(dataBytes).object();
             if (data.isEmpty()) return;
